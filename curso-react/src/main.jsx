@@ -5,24 +5,28 @@ import App from './App.jsx'
 import { install } from '@twind/core'
 import presetAutoprefix from '@twind/preset-autoprefix'
 import presetTailwind from '@twind/preset-tailwind'
+import { BrowserRouter } from 'react-router'
 install({
-  presets:[
+  presets: [
     presetAutoprefix(),
     presetTailwind(),
   ],
   theme: {
-    extend : {
+    extend: {
       colors: {
         primary: '#5782AD',
         secondary: '#B3D9FF',
       },
-    }, 
+    },
   },
-   
+
 })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+
   </StrictMode>,
 )
