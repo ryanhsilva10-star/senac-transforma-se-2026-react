@@ -7,7 +7,9 @@ const[] = useState ();
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     
-
+function handleLogin(){
+    const users = JSON.parse(localStorage.getItem('users'))
+}
 
     return (
         <div class="h-full flex">
@@ -26,7 +28,7 @@ const[] = useState ();
                     placeholder="Digite sua senha cadastrada"
                     onChange={(e) =>setSenha(e.target.value)} />
 
-                    <Link id="btLogin" class="mt-5 bg-primary text-white text-center rounded-md py-2">Entrar</Link>
+                    <Link onClick={handleLogin()} class="mt-5 bg-primary text-white text-center rounded-md py-2">Entrar</Link>
                 </form>
             </div>
         </div>
