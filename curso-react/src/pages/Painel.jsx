@@ -20,7 +20,20 @@ function Painel() {
         const tempUsers = JSON.parse(localStorage.getItem('users'))
         if (tempUsers) setUsers(tempUsers)
     }, [])
+    //Read = Ler
+    async function loadUsers() {
+        //data e error estão assim porque eu nomeio elas
+        const {data, error} = await supabase.from('alunos').select('*')
+        //Tratamento
+            if(error){
+            setMsg(error.mensage)
+            return;
 
+            }
+
+            setUser(data);
+    }
+    //Delete =
     function deleteUser(index){
         const newUsers = users.filter ((u,i)=>{return i !=index})
         setUsers(newUsers)
@@ -34,11 +47,7 @@ function Painel() {
     }
 
     async function handleRegister(){
-        setUser({})
-        setModal(false)
-        setIndex(-1)
-        setIsEdit(false)
-
+        setSpider(true);
         const {
             data: authData, error: authError 
         } = await supabase.auth.signUp({
@@ -84,7 +93,7 @@ function Painel() {
             return;
         }
 
-        if(!loginError){
+        if(loginError){
             setMsg("Não foi possivel cadastrar, verifique sua internet")
             setSpider(false)
             return;
@@ -127,7 +136,7 @@ function Painel() {
                                 <input value={user.nascimento} onChange={ (e) => setUser({...user, nascimento: e.target.value }) }  type="date" />
                                 
                                 Matricula:
-                                <input value={user.matricula} onChange={ (e) => setUser({...user, matricula: e.target.value }) } type="number" placeholder="Digite sua matricula" />
+                                <input value={user.matricula} onChange={ (e) => setUser({...user, matricula: e.target.value }) } type="text" placeholder="Digite sua matricula" />
                                 
                                 Celular:
                                 <input value={user.celular} onChange={ (e) => setUser({...user, celular: e.target.value }) } type="number" placeholder="Digite seu celular" />
