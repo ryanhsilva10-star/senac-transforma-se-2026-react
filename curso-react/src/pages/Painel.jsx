@@ -8,6 +8,7 @@ function Painel() {
     const [logged, setLogged] = useState({});
     const [isEdit, setIsEdit] = useState(false);
     const [index, setIndex] = useState(-1);
+    
     const [spiner, setSpider] = useState (false);
     const [msg,setMsg] = useState ('');
 
@@ -17,33 +18,57 @@ function Painel() {
     }, [])
 
     useEffect(() => {
-        const tempUsers = JSON.parse(localStorage.getItem('users'))
-        if (tempUsers) setUsers(tempUsers)
+       loadUsers()
     }, [])
     //Read = Ler
     async function loadUsers() {
         //data e error estão assim porque eu nomeio elas
         const {data, error} = await supabase.from('alunos').select('*')
         //Tratamento
-            if(error){
+        if(error){
             setMsg(error.mensage)
             return;
 
-            }
+        }
 
-            setUser(data);
+        setUsers(data)
     }
+    async function editUser(){
+        const { data, error } = await supabase
+            .from('alunos')
+            .update(user)
+            .eq('id', index)
+        if(error){
+            setMsg(error.message)
+            setSpider(false)
+            return;        
+        }
+
+        setMsg("Usuario editado")
+        setSpider(false)
+        loadUsers()
     //Delete =
-    function deleteUser(index){
-        const newUsers = users.filter ((u,i)=>{return i !=index})
-        setUsers(newUsers)
-        localStorage.setItem('users', JSON.stringify(newUsers));
     }
 
-    function updateUser(indice){
+    async function deleteUser(){
+        const { error } = await supabase
+            .from('alunos')
+            .delete()
+            .eq('id', index);
+
+        if(error){
+            setMsg(error.message)
+            return;        
+        }
+        setMsg("Usuario deletado")
+        loadUsers()
+    }
+
+
+    function updateUser(user){
         setModal(true)
-        setUser( users[indice] )
-        setIndex(indice)
+        setUser(user)
+        setIndex(user.id)
     }
 
     async function handleRegister(){
@@ -80,10 +105,7 @@ function Painel() {
             .from('alunos')
             .insert({
             user_id:loginData.user.id,
-            nome:user.nome,
-            matricula:user.matricula,
-            nascimento: user.nascimento,
-            celular:user.celular
+            
         });
 
     
@@ -126,11 +148,17 @@ function Painel() {
                             <form className="flex flex-col">
                                 Nome:
                                 <input value={user.nome} onChange={ (e) => setUser({...user, nome: e.target.value }) } type="text" placeholder="Digite seu nome completo" />
-                                Email:
-                                <input value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) }  type="email" placeholder="Digite o seu melhor email" />
-                    
-                                Senha:
-                                <input onChange={ (e) => setUser({...user, senha: e.target.value }) }  type="password" placeholder="Letra maiúscula e números" />
+                                 {!index && (
+                                    <>
+                                        Email:
+                                        <input value={user.email} onChange={ (e) => setUser({...user, email: e.target.value }) }  type="email" placeholder="Digite o seu melhor email" />
+                                        
+                                        Senha:
+                                        <input onChange={ (e) => setUser({...user, senha: e.target.value }) }  type="password" placeholder="Letra maiúscula e números" />
+
+                                    </>
+                                 )}                    
+                                
 
                                 Data de nascimento:
                                 <input value={user.nascimento} onChange={ (e) => setUser({...user, nascimento: e.target.value }) }  type="date" />
@@ -147,7 +175,17 @@ function Painel() {
                                     )
                                 }
 
-                                <a onClick={handleRegister} className="mt-5 bg-primary text-white text-center rounded-md py-2"> {spiner? '...' :'Salvar'}</a>
+                                <a onClick={
+                                    ()=>{
+                                        if (index == -1)
+                                            handleRegister()
+                                        else 
+                                            editUser()
+                                    }
+                                }  
+                                className="mt-5 bg-primary text-white text-center rounded-md py-2"
+                                > 
+                                {spiner? '...' :'Salvar'}</a>
                                 {msg}
                             </form>
                             ): //else 
@@ -155,6 +193,8 @@ function Painel() {
                             <>
                                 <p> Nome: {user.nome}</p>
                                 <p> Email: {user.email}</p>
+                                <p> Matricula: {user.matricula}</p>
+                                <p> Celular: {user.celular}</p>
                                 <p> Data de Nascimento: {user.nascimento}</p>
                                 <a onClick={()=> setIsEdit(true)} className="mt-5 bg-primary text-black text-center rounded-md py-2 bg-yellow-500">Editar</a>
                             </>    
@@ -180,10 +220,12 @@ function Painel() {
                     <th>Ações</th>
                 </thead>
                 <tbody className="font-secundary">
-                    {users.map( (u,i) => (
-                        <tr>
+                    {users.map( (u) => (
+                        <tr key = {u.id}>
                             <td>{u.nome}</td>
                             <td>{u.email}</td>
+                            <td>{u.matricula}</td>
+                            <td>{u.celular}</td>
                             <td>
                                 <a className='cursor-pointer
                                             px-2
@@ -193,7 +235,7 @@ function Painel() {
                                             text-white
                                             rounded-full
                                             bg-green-500'
-                                    onClick={()=> updateUser(i)}
+                                    onClick={()=> updateUser(u)}
                                 >V</a>
                                 <a className='cursor-pointer
                                             px-2
@@ -203,7 +245,7 @@ function Painel() {
                                             text-white
                                             rounded-full
                                             bg-red-500'
-                                    onClick={()=> deleteUser(i)}
+                                    onClick={()=> deleteUser(u)}
                                 >X</a>
                             </td>
                         </tr>
